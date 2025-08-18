@@ -40,37 +40,37 @@ def store_to_supabase(chunks, embeddings, pdf_id):
     } for chunk, embedding in zip(chunks, embeddings)]
     supabase.table("documents1").upsert(data).execute()
 
-def retrieve_chunks(query, pdf_id, top_k=3):
+def retrieve_chunks(query, pdf_id, top_k=10):
     query_embedding = model.encode(query).tolist()
     response = supabase.rpc("match_documents", {
         "query_embedding": query_embedding,
         "match_count": top_k,
         "pdf_id_filter": pdf_id
     }).execute()
-    return [row["text"] for row in response.data] if response.data else []
+    relevant_chunk=[row["text"] for row in response.data] if response.data else []
+    return relevant_chunk
 
-def refine_with_llm(chunks, question):
-    context = "\n\n---\n\n".join(chunks)
+def refine_with_llm(relevant_chunk, question):
+    refinement_input = "\n\n---\n\n".join(relevant_chunk)
     prompt = f"""
-Answer the user's question based on the document chunks below.
-Explain simply and accurately.
-
-Chunks:
-{context}
-
-Question:
-{question}
-"""
+    Refine the following extracted text chunks for clarity, conciseness, and improved readability.
+    Keep the technical meaning accurate and explain any complex terms simply if needed.
+    Text to refine:
+    {refinement_input}
+    Question:
+    {question}"""
+    
     response = hf_client.chat.completions.create(
-        model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.5,
-        max_tokens=500
+    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+    messages=[
+        {"role": "system", "content": "You are an expert technical editor and writer."},
+        {"role": "user", "content": prompt}
+    ],
+    temperature=0.7,
+    max_tokens=500  # Adjust based on expected output length
     )
-    return response.choices[0].message.content
+    refined_text = response.choices[0].message.content
+    return refined_text
 
 # ========= STREAMLIT UI ==========
 st.set_page_config(page_title="PDF Q&A Assistant")
