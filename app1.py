@@ -33,11 +33,11 @@ def embed_chunks(chunks):
 
 def store_to_supabase(chunks, embeddings, pdf_id):
     data = [{
-        "id": str(uuid.uuid4()),
+        "id": f"chunk{i+1}",   # id will be chunk1, chunk2, ...
         "pdf_id": pdf_id,
         "text": chunk,
         "embedding": embedding
-    } for chunk, embedding in zip(chunks, embeddings)]
+    } for i, (chunk, embedding) in enumerate(zip(chunks, embeddings))]
     supabase.table("documents1").upsert(data).execute()
 
 def retrieve_chunks(query, pdf_id, top_k=10):
@@ -104,5 +104,5 @@ if uploaded_file:
                 st.error("❌ No relevant chunks found.")
             else:
                 answer = refine_with_llm(results, question)
-                st.markdown("### 🧠 Answer:")
+                st.markdown("### Answer:")
                 st.write(answer)
