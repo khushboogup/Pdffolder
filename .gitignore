@@ -210,7 +210,7 @@ __marimo__/
 # .gitignore
 
 # Ignore sensitive files (like API keys)
-.streamlit/secrets.toml
+/Users/khushboogupta/Files/Pdffolder/.streamlit/secrets.toml
 
 # Ignore virtual environment folders
 venv/

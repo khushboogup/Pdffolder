@@ -59,15 +59,14 @@ def refine_with_llm(relevant_chunk, question):
     {refinement_input}
     Question:
     {question}"""
-    
     response = hf_client.chat.completions.create(
-    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-    messages=[
-        {"role": "system", "content": "You are an expert technical editor and writer."},
-        {"role": "user", "content": prompt}
-    ],
-    temperature=0.7,
-    max_tokens=500  # Adjust based on expected output length
+        model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+        messages=[
+            {"role": "system", "content": "You are an expert technical editor and writer."},
+            {"role": "user", "content": prompt}
+            ],
+        temperature=0.7,
+        max_tokens=90  # Adjust based on expected output length
     )
     refined_text = response.choices[0].message.content
     return refined_text
